@@ -52,15 +52,15 @@ class motion_executioner(Node):
 
         # TODO Part 5: Create below the subscription to the topics corresponding to the respective sensors
         # IMU subscription
-        
+        self.subscription = self.create_subscription(IMU, "/imu", self.imu_callback, qos_profile=qos)
         ...
         
         # ENCODER subscription
-
+	self.subscription = self.create_subscription(Odometry, "/odom", self.odom_callback, qos_profile=qos)
         ...
         
         # LaserScan subscription 
-        
+        self.subscription = self.create_subscription(LaserScan, "/laserscan", self.laser_callback, qos_profile=qos)
         ...
         
         self.motion_start_time=self.get_clock().now().nanoseconds
@@ -73,16 +73,81 @@ class motion_executioner(Node):
     # such: Time.from_msg(imu_msg.header.stamp).nanoseconds
     # You can save the needed fields into a list, and pass the list to the log_values function in utilities.py
 
+    timestep_num = 10000
+list_imu = [[None]*2]*timestep_num
+imu_num = 0
+list_odom = [[None]*4]*timestep_num
+odom_num = 0
+list_scan = [[None]*361]*timestep_num
+scan_num = 0
+
+
     def imu_callback(self, imu_msg: Imu):
-        ...    # log imu msgs
+        timestamp = time.from_msg(imu_msg.header.stamp).nanoseconds
+
+        imu_quaternionx = imu_msg.orientation.x
+        imu_quaterniony = imu_msg.orientation.y
+        imu_quaternionz = imu_msg.orientation.z  
+        imu_quaternionw = imu_msg.orientation.w 
+
+        quat = [imu_quaternionx, imu_quaterniony, imu_quaternionz, imu_quaternionz]
+        yaw = euler_from_quaternion(quat)
+        # print(f'Message Timestamp = {timestamp}')
+        # print(f'Current Robot Yaw = {yaw}')
+
+        list_imu[imu_num][0]=timestamp
+        list_imu[imu_num][1] = yaw
+
+        imu_num += 1
         
     def odom_callback(self, odom_msg: Odometry):
+    
+        timestamp = time.from_msg(odom_msg.header.stamp).nanoseconds
+        
+        odom_orientation = odom_msg.pose.pose.orientation 
+        odom_x_pos = odom_msg.pose.pose.position.x
+        odom_y_pos = odom_msg.pose.pose.position.y
+
+        
+        # pass to a list
+        list_odom[odom_num][0] = timestamp
+        list_odom[odum_num][1] = odom_orientation
+        list_odom[odum_num][2] = odom_x_pos
+        list_odom[odum_num][3] = odom_y_pos
+
+        odum_num += 1
+
+    
+    # print(f'Message Timestamp = {timestamp}')
+    # print(f'Current Robot Orientation = {odom_orientation}')
+    # print(f'Current Robot X Position = {odom_x_pos}')
+    # print(f'Current Robot Y Position = {odom_y_pos}')
         
         ... # log odom msgs
                 
     def laser_callback(self, laser_msg: LaserScan):
+        timestamp = time.from_msg(laser_msg.header.stamp).nanoseconds
         
-        ... # log laser msgs with position msg at that time
+        angle_min = laser_msg.angle_min
+        angle_max = laser_msg.angle_max
+        angle_increment = laser_msg.angle_increment
+
+        angle = angle_min
+
+        list_scan[scan_num][0]=timestamp
+
+
+        i = 0
+        while angle <= angle_max:
+            
+            range = laser_msg.ranges[i]
+
+            print(f'Lidar Range  = {range} @ {angle}')
+            list_scan[scan_num][i+1] = range
+            angle += angle_increment
+            i += 1 
+        
+        scan_num += 1
                 
     def timer_callback(self):
         
