@@ -63,6 +63,7 @@ class motion_executioner(Node):
         
         ...
         
+        self.motion_start_time=self.get_clock().now().nanoseconds
         self.create_timer(0.1, self.timer_callback)
 
 
@@ -110,21 +111,33 @@ class motion_executioner(Node):
         
     
     # TODO Part 4: Motion functions: complete the functions to generate the proper messages corresponding to the desired motions of the robot
+    
+    def make_acc_line_twist(self):
+        vel = 0.1
+        msg = Twist()
+        # fill up the twist msg for line motion
+        msg.linear.x = vel
+        msg.angular.z = 0.0
+        return msg
 
     def make_circular_twist(self):
-        
-        msg=Twist()
-        ... # fill up the twist msg for circular motion
+        vel = 0.1
+        radius = 0.5
+        msg = Twist()
+        # fill up the twist msg for circular motion
+        msg.linear.x = vel
+        msg.angular.z = vel/radius
         return msg
 
     def make_spiral_twist(self):
+        vel = 0.1
+        init_radius = 0.2
+        t = (self.get_clock().now.nanoseconds - self.motion_start_time) * 1e-9
+        radius = init_radius + 0.1*t
         msg=Twist()
-        ... # fill up the twist msg for spiral motion
-        return msg
-    
-    def make_acc_line_twist(self):
-        msg=Twist()
-        ... # fill up the twist msg for line motion
+        # fill up the twist msg for spiral motion
+        msg.linear.x = vel
+        msg.angular.z = vel/radius
         return msg
 
 import argparse
