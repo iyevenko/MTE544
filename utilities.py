@@ -23,10 +23,14 @@ class Logger:
         with open(self.filename, 'a') as file:
             vals_str=""
 
-            # TODO Part 5: Write the values from the list to the file
-            ...
+            #read values in list to string
+
+            for i in list:
+                vals_str+= str(i)+','
             
             vals_str+="\n"
+
+            #write string to file
             
             file.write(vals_str)
             
