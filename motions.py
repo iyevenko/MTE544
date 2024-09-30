@@ -72,82 +72,78 @@ class motion_executioner(Node):
     # inside the header you have a stamp that has the time in seconds and nanoseconds, you should log it in nanoseconds as 
     # such: Time.from_msg(imu_msg.header.stamp).nanoseconds
     # You can save the needed fields into a list, and pass the list to the log_values function in utilities.py
-
-    timestep_num = 10000
-list_imu = [[None]*2]*timestep_num
-imu_num = 0
-list_odom = [[None]*4]*timestep_num
-odom_num = 0
-list_scan = [[None]*361]*timestep_num
-scan_num = 0
-
-
     def imu_callback(self, imu_msg: Imu):
+        #timestamp of 
         timestamp = time.from_msg(imu_msg.header.stamp).nanoseconds
+
+        #reading the values for the quaternion of the robot's movement
 
         imu_quaternionx = imu_msg.orientation.x
         imu_quaterniony = imu_msg.orientation.y
         imu_quaternionz = imu_msg.orientation.z  
         imu_quaternionw = imu_msg.orientation.w 
 
+        # creating a vector quaternion
+
         quat = [imu_quaternionx, imu_quaterniony, imu_quaternionz, imu_quaternionz]
-        yaw = euler_from_quaternion(quat)
-        # print(f'Message Timestamp = {timestamp}')
-        # print(f'Current Robot Yaw = {yaw}')
 
-        list_imu[imu_num][0]=timestamp
-        list_imu[imu_num][1] = yaw
-
-        imu_num += 1
         
+        #calling a function that turns the quaternion into euler angles
+        angular_z = euler_from_quaternion(quat)
+        #x and y accelerations
+        acc_x = imu_msg.linear_acceleration.x 
+        acc_y = imu_msg.linear_acceleration.y 
+
+
+        #logging imu values
+        imu_list = [acc_x, acc_y, angular_z, timestamp]
+        log_values(imu_list)
+
+
+
+
     def odom_callback(self, odom_msg: Odometry):
     
         timestamp = time.from_msg(odom_msg.header.stamp).nanoseconds
         
+        #reads orientation, x position, and y position of the robot
         odom_orientation = odom_msg.pose.pose.orientation 
         odom_x_pos = odom_msg.pose.pose.position.x
         odom_y_pos = odom_msg.pose.pose.position.y
 
-        
-        # pass to a list
-        list_odom[odom_num][0] = timestamp
-        list_odom[odum_num][1] = odom_orientation
-        list_odom[odum_num][2] = odom_x_pos
-        list_odom[odum_num][3] = odom_y_pos
+        #log odom values
+        odom_list = [ odom_x_pos, odom_y_pos,odom_orientation, timestamp]
+        log_values(odom_list)
 
-        odum_num += 1
-
-    
-    # print(f'Message Timestamp = {timestamp}')
-    # print(f'Current Robot Orientation = {odom_orientation}')
-    # print(f'Current Robot X Position = {odom_x_pos}')
-    # print(f'Current Robot Y Position = {odom_y_pos}')
         
-        ... # log odom msgs
+        
                 
     def laser_callback(self, laser_msg: LaserScan):
         timestamp = time.from_msg(laser_msg.header.stamp).nanoseconds
         
+        #reads angle_min, angle_max, and angle_increment values for laser scanner
         angle_min = laser_msg.angle_min
         angle_max = laser_msg.angle_max
         angle_increment = laser_msg.angle_increment
 
+        #sets initial angle in for loop to angle_min value(0 rad)
         angle = angle_min
 
-        list_scan[scan_num][0]=timestamp
+        #initializing ranges list
 
+        ranges = [0]*360
 
         i = 0
+        #increases from 0 rad to 2 rad/s in 0.0174533 increments (1 degree)
         while angle <= angle_max:
-            
-            range = laser_msg.ranges[i]
-
-            print(f'Lidar Range  = {range} @ {angle}')
-            list_scan[scan_num][i+1] = range
+            #reads value of range for angle
+            ranges[i] = laser_msg.ranges[i]
             angle += angle_increment
             i += 1 
-        
-        scan_num += 1
+
+        laser_list = [ranges, angle_increment, timestamp]
+        log_values(laser_list)
+
                 
     def timer_callback(self):
         
