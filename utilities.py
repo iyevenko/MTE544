@@ -25,7 +25,7 @@ class Logger:
 
             #read values in list to string
 
-            for i in list:
+            for i in values_list:
                 vals_str+= str(i)+','
             
             vals_str+="\n"
@@ -90,10 +90,11 @@ def euler_from_quaternion(quat):
     qz = quat[2]
     qw = quat[3]
 
-    roll = atan2(2*(qw*qx+qy*qz),1-2*(qx^2+qy^2))
+    roll = atan2(2*(qw*qx+qy*qz),1-2*(qx**2+qy**2))
     pitch = -M_PI + 2*atan2(sqrt(1+2*(qw*qy-qx*qz)),sqrt(1-2*(qw*qy-qx*qz)))
-    yaw = atan2(2*(qw*qz+qx*qy),1-2*(qy^2+qz^2))
+    yaw = atan2(2*(qw*qz+qx*qy),1-2*(qy**2+qz**2))
     ... # just unpack yaw
     return yaw
+
 
 
