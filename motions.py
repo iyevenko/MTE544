@@ -12,7 +12,7 @@ from rclpy.qos import QoSProfile
 # Check the online documentation to fill in the lines below
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Imu
-from ... import LaserScan
+from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
 
 from rclpy.time import Time
@@ -23,6 +23,8 @@ from rclpy.time import Time
 
 CIRCLE=0; SPIRAL=1; ACC_LINE=2
 motion_types=['circle', 'spiral', 'line']
+
+
 
 class motion_executioner(Node):
     
@@ -52,17 +54,19 @@ class motion_executioner(Node):
 
         # TODO Part 5: Create below the subscription to the topics corresponding to the respective sensors
         # IMU subscription
-        self.subscription = self.create_subscription(IMU, "/imu", self.imu_callback, qos_profile=qos)
+        self.subscription = self.create_subscription(Imu, "/imu", self.imu_callback, qos_profile=qos)
         
         # ENCODER subscription
-	    self.subscription = self.create_subscription(Odometry, "/odom", self.odom_callback, qos_profile=qos)
+        self.subscription = self.create_subscription(Odometry, "/odom", self.odom_callback, qos_profile=qos)
         
         # LaserScan subscription 
-        self.subscription = self.create_subscription(LaserScan, "/laserscan", self.laser_callback, qos_profile=qos)
+        self.subscription = self.create_subscription(LaserScan, "/scan", self.laser_callback, qos_profile=qos)
 
         
         self.motion_start_time=self.get_clock().now().nanoseconds
         self.create_timer(0.1, self.timer_callback)
+
+        self.laser_logged = False
 
 
     # TODO Part 5: Callback functions: complete the callback functions of the three sensors to log the proper data.
@@ -72,7 +76,7 @@ class motion_executioner(Node):
     # You can save the needed fields into a list, and pass the list to the log_values function in utilities.py
     def imu_callback(self, imu_msg: Imu):
         #timestamp of 
-        timestamp = time.from_msg(imu_msg.header.stamp).nanoseconds
+        timestamp = Time.from_msg(imu_msg.header.stamp).nanoseconds
 
         #reading the values for the quaternion of the robot's movement
 
@@ -95,52 +99,53 @@ class motion_executioner(Node):
 
         #logging imu values
         imu_list = [acc_x, acc_y, angular_z, timestamp]
-        log_values(imu_list)
-
-
-
+        self.imu_logger.log_values(imu_list)
 
     def odom_callback(self, odom_msg: Odometry):
     
-        timestamp = time.from_msg(odom_msg.header.stamp).nanoseconds
+        timestamp = Time.from_msg(odom_msg.header.stamp).nanoseconds
         
+        #reading the values for the quaternion of the robot's movement
+
+        odom_quaternionx = odom_msg.pose.pose.orientation.x
+        odom_quaterniony = odom_msg.pose.pose.orientation.y
+        odom_quaternionz = odom_msg.pose.pose.orientation.z
+        odom_quaternionw = odom_msg.pose.pose.orientation.w
+
+
+        # creating a vector quaternion
+
+        quat = [odom_quaternionx,odom_quaterniony, odom_quaternionz, odom_quaternionz]
+
         #reads orientation, x position, and y position of the robot
-        odom_orientation = odom_msg.pose.pose.orientation 
+        odom_orientation = euler_from_quaternion(quat)
         odom_x_pos = odom_msg.pose.pose.position.x
         odom_y_pos = odom_msg.pose.pose.position.y
 
         #log odom values
         odom_list = [ odom_x_pos, odom_y_pos,odom_orientation, timestamp]
-        log_values(odom_list)
+        self.odom_logger.log_values(odom_list)
 
         
         
                 
     def laser_callback(self, laser_msg: LaserScan):
-        timestamp = time.from_msg(laser_msg.header.stamp).nanoseconds
+        if self.laser_logged:
+            return
+        self.laser_logged = True
+        timestamp = Time.from_msg(laser_msg.header.stamp).nanoseconds
         
         #reads angle_min, angle_max, and angle_increment values for laser scanner
-        angle_min = laser_msg.angle_min
-        angle_max = laser_msg.angle_max
         angle_increment = laser_msg.angle_increment
 
-        #sets initial angle in for loop to angle_min value(0 rad)
-        angle = angle_min
-
-        #initializing ranges list
-
-        ranges = [0]*360
 
         i = 0
-        #increases from 0 rad to 2 rad/s in 0.0174533 increments (1 degree)
-        while angle <= angle_max:
-            #reads value of range for angle
-            ranges[i] = laser_msg.ranges[i]
-            angle += angle_increment
-            i += 1 
+        for rng in laser_msg.ranges:
+            laser_list = [rng, angle_increment, timestamp]
+            
+            self.laser_logger.log_values(laser_list)
 
-        laser_list = [ranges, angle_increment, timestamp]
-        log_values(laser_list)
+    
 
                 
     def timer_callback(self):
@@ -233,3 +238,4 @@ if __name__=="__main__":
         rclpy.spin(ME)
     except KeyboardInterrupt:
         print("Exiting")
+
