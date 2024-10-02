@@ -55,14 +55,16 @@ class motion_executioner(Node):
         # TODO Part 5: Create below the subscription to the topics corresponding to the respective sensors
         # IMU subscription
         self.subscription = self.create_subscription(Imu, "/imu", self.imu_callback, qos_profile=qos)
+        self.imu_initialized = True
         
         # ENCODER subscription
         self.subscription = self.create_subscription(Odometry, "/odom", self.odom_callback, qos_profile=qos)
+        self.odom_initialized = True
         
         # LaserScan subscription 
         self.subscription = self.create_subscription(LaserScan, "/scan", self.laser_callback, qos_profile=qos)
+        self.laser_initialized = True
 
-        
         self.motion_start_time=self.get_clock().now().nanoseconds
         self.create_timer(0.1, self.timer_callback)
 
@@ -78,25 +80,13 @@ class motion_executioner(Node):
         #timestamp of 
         timestamp = Time.from_msg(imu_msg.header.stamp).nanoseconds
 
-        #reading the values for the quaternion of the robot's movement
-
-        imu_quaternionx = imu_msg.orientation.x
-        imu_quaterniony = imu_msg.orientation.y
-        imu_quaternionz = imu_msg.orientation.z  
-        imu_quaternionw = imu_msg.orientation.w 
-
-        # creating a vector quaternion
-
-        quat = [imu_quaternionx, imu_quaterniony, imu_quaternionz, imu_quaternionz]
-
-        
-        #calling a function that turns the quaternion into euler angles
-        angular_z = euler_from_quaternion(quat)
         #x and y accelerations
         acc_x = imu_msg.linear_acceleration.x 
-        acc_y = imu_msg.linear_acceleration.y 
+        acc_y = imu_msg.linear_acceleration.y
 
-
+        # yaw rate
+        angular_z = imu_msg.angular_velocity.z
+        
         #logging imu values
         imu_list = [acc_x, acc_y, angular_z, timestamp]
         self.imu_logger.log_values(imu_list)
@@ -115,7 +105,7 @@ class motion_executioner(Node):
 
         # creating a vector quaternion
 
-        quat = [odom_quaternionx,odom_quaterniony, odom_quaternionz, odom_quaternionz]
+        quat = [odom_quaternionx,odom_quaterniony, odom_quaternionz, odom_quaternionw]
 
         #reads orientation, x position, and y position of the robot
         odom_orientation = euler_from_quaternion(quat)
@@ -149,10 +139,10 @@ class motion_executioner(Node):
 
                 
     def timer_callback(self):
-        
+        # print('TIMER CALLBACK')
         if self.odom_initialized and self.laser_initialized and self.imu_initialized:
             self.successful_init=True
-            
+        
         if not self.successful_init:
             return
         
@@ -177,7 +167,8 @@ class motion_executioner(Node):
     # TODO Part 4: Motion functions: complete the functions to generate the proper messages corresponding to the desired motions of the robot
     
     def make_acc_line_twist(self):
-        vel = 0.1
+        print('SETTING VEL')
+        vel = 0.3
         msg = Twist()
         # fill up the twist msg for line motion
         msg.linear.x = vel
@@ -185,8 +176,8 @@ class motion_executioner(Node):
         return msg
 
     def make_circular_twist(self):
-        vel = 0.1
-        radius = 0.5
+        vel = 0.3
+        radius = 0.1
         msg = Twist()
         # fill up the twist msg for circular motion
         msg.linear.x = vel
@@ -194,10 +185,10 @@ class motion_executioner(Node):
         return msg
 
     def make_spiral_twist(self):
-        vel = 0.1
-        init_radius = 0.2
-        t = (self.get_clock().now.nanoseconds - self.motion_start_time) * 1e-9
-        radius = init_radius + 0.1*t
+        vel = 0.3
+        init_radius = 0.1
+        t = (self.get_clock().now().nanoseconds - self.motion_start_time) * 1e-9
+        radius = init_radius + 0.01*t
         msg=Twist()
         # fill up the twist msg for spiral motion
         msg.linear.x = vel
