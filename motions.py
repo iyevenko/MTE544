@@ -68,6 +68,7 @@ class motion_executioner(Node):
         self.motion_start_time=self.get_clock().now().nanoseconds
         self.create_timer(0.1, self.timer_callback)
 
+        #boolean to ensure that only one timestamp of lidar scan is plotted to an excel file 
         self.laser_logged = False
 
 
@@ -77,7 +78,7 @@ class motion_executioner(Node):
     # such: Time.from_msg(imu_msg.header.stamp).nanoseconds
     # You can save the needed fields into a list, and pass the list to the log_values function in utilities.py
     def imu_callback(self, imu_msg: Imu):
-        #timestamp of 
+        #gets timestamp from robot in nanoseconds 
         timestamp = Time.from_msg(imu_msg.header.stamp).nanoseconds
 
         #x and y accelerations
@@ -92,11 +93,11 @@ class motion_executioner(Node):
         self.imu_logger.log_values(imu_list)
 
     def odom_callback(self, odom_msg: Odometry):
-    
+
+        #timestamp in nanoseconds
         timestamp = Time.from_msg(odom_msg.header.stamp).nanoseconds
         
         #reading the values for the quaternion of the robot's movement
-
         odom_quaternionx = odom_msg.pose.pose.orientation.x
         odom_quaterniony = odom_msg.pose.pose.orientation.y
         odom_quaternionz = odom_msg.pose.pose.orientation.z
@@ -104,7 +105,6 @@ class motion_executioner(Node):
 
 
         # creating a vector quaternion
-
         quat = [odom_quaternionx,odom_quaterniony, odom_quaternionz, odom_quaternionw]
 
         #reads orientation, x position, and y position of the robot
@@ -115,24 +115,22 @@ class motion_executioner(Node):
         #log odom values
         odom_list = [ odom_x_pos, odom_y_pos,odom_orientation, timestamp]
         self.odom_logger.log_values(odom_list)
-
-        
-        
                 
     def laser_callback(self, laser_msg: LaserScan):
+        #function only runs once, below logic sets laser_logged variable to true 
         if self.laser_logged:
             return
         self.laser_logged = True
+
+        #timestamp in nanoseconds
         timestamp = Time.from_msg(laser_msg.header.stamp).nanoseconds
         
         #reads angle_min, angle_max, and angle_increment values for laser scanner
         angle_increment = laser_msg.angle_increment
 
-
-        i = 0
+        #for loop that goes through range data and logs range values after each angle increment
         for rng in laser_msg.ranges:
             laser_list = [rng, angle_increment, timestamp]
-            
             self.laser_logger.log_values(laser_list)
 
     
