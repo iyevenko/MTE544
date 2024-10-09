@@ -165,30 +165,32 @@ class motion_executioner(Node):
     # TODO Part 4: Motion functions: complete the functions to generate the proper messages corresponding to the desired motions of the robot
     
     def make_acc_line_twist(self):
-        print('SETTING VEL')
-        vel = 0.3
+        vel = 0.3 # m/s
         msg = Twist()
-        # fill up the twist msg for line motion
+        # General equation for linear motion in x direction with no rotation
         msg.linear.x = vel
         msg.angular.z = 0.0
         return msg
 
     def make_circular_twist(self):
-        vel = 0.3
-        radius = 0.1
+        vel = 0.3 # m/s
+        radius = 0.1 # m
         msg = Twist()
-        # fill up the twist msg for circular motion
+        # General equation for circular motion
         msg.linear.x = vel
         msg.angular.z = vel/radius
         return msg
 
     def make_spiral_twist(self):
-        vel = 0.3
-        init_radius = 0.1
+        vel = 0.3 # m/s
+        init_radius = 0.1 # m
+        radius_increment_rate = 0.01 # m/s
+        # Get time since start in seconds
         t = (self.get_clock().now().nanoseconds - self.motion_start_time) * 1e-9
-        radius = init_radius + 0.01*t
+        # Increment radius on every tick
+        radius = init_radius + radius_increment_rate*t
         msg=Twist()
-        # fill up the twist msg for spiral motion
+        # Equation for circular motion with current radius
         msg.linear.x = vel
         msg.angular.z = vel/radius
         return msg
