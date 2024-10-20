@@ -85,12 +85,17 @@ class FileReader:
 
 # TODO Part 3: Implement the conversion from Quaternion to Euler Angles
 def euler_from_quaternion(quat):
-    """
-    Convert quaternion (w in last place) to euler roll, pitch, yaw.
-    quat = [x, y, z, w]
-    """
-
-    # just unpack yaw
+    #gets the variables from the quaternion vector
+    qx= quat[0]
+    qy = quat[1]
+    qz = quat[2]
+    qw = quat[3]
+    
+    #calculates roll, pitch and yaw euler angles
+    roll = atan2(2*(qw*qx+qy*qz),1-2*(qx**2+qy**2))
+    pitch = -M_PI + 2*atan2(sqrt(1+2*(qw*qy-qx*qz)),sqrt(1-2*(qw*qy-qx*qz)))
+    yaw = atan2(2*(qw*qz+qx*qy),1-2*(qy**2+qz**2))
+    #returns yaw to odom_log function
     return yaw
 
 
@@ -111,11 +116,14 @@ def calculate_angular_error(current_pose, goal_pose):
     # Remember that current_pose = [x,y, theta, time stamp] and goal_pose = [x,y]
     # Use atan2 to find the desired orientation
     # Remember that this function returns the difference in orientation between where the robot currently faces and where it should face to reach the goal
-
-    error_angular = ...
+    error_x = current_pose[0]-goal_pose[0]
+    error_y = current_pose[1]-goal_pose[1]
+    error_angular = atan2(error_y,error_x)
 
     # Remember to handle the cases where the angular error might exceed the range [-π, π]
-
-    ...
+    if error_angular > M_PI:
+        error_angular = error_angular % (2*M_PI) - 2*M_PI
+    elif error_angular < -M_PI:
+        error_angular = error_angular % (2*M_PI) + 2*M_PI
     
     return error_angular
