@@ -30,8 +30,8 @@ class controller:
         
         # TODO Part 4: Add saturation limits for the robot linear and angular velocity
 
-        linear_vel = ... if linear_vel > 1.0 else linear_vel
-        angular_vel= ... if angular_vel > 1.0 else angular_vel
+        linear_vel = 0.31 if linear_vel > 1.0 else linear_vel
+        angular_vel= 1.90 if angular_vel > 1.0 else angular_vel
         
         return linear_vel, angular_vel
     
