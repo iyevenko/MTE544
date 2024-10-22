@@ -24,6 +24,7 @@ class PID_ctrl:
         self.logger=Logger(filename_)
         # Remeber that you are writing to the file named filename_ or errors.csv the following:
             # error, error_dot, error_int and time stamp
+        self.error_int = 0.0
 
     
     def update(self, stamped_error, status):
@@ -78,10 +79,10 @@ class PID_ctrl:
             sum_+= hist[0]
             pass
         
-        error_int=sum_*dt_avg
+        self.error_int+=sum_*dt_avg
         
         # TODO Part 4: Log your errors
-        error_list = [latest_error, error_dot,error_int,stamp]
+        error_list = [latest_error, error_dot,self.error_int,stamp]
         self.logger.log_values(error_list)
         
         # TODO Part 4: Implement the control law of P-controller
@@ -95,9 +96,9 @@ class PID_ctrl:
             return vel
         
         elif self.type == PI:
-            vel = self.kp*latest_error + self.ki*error_int
+            vel = self.kp*latest_error + self.ki*self.error_int
             return vel
         
         elif self.type == PID:
-            vel = self.kp*latest_error + self.ki*error_int + self.kv*error_dot
+            vel = self.kp*latest_error + self.ki*self.error_int + self.kv*error_dot
             return vel
