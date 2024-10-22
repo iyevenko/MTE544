@@ -84,7 +84,6 @@ class decision_maker(Node):
 
         if reached_goal:
             print("reached goal")
-            self.publisher.publish(vel_msg)
             
             self.controller.PID_angular.logger.save_log()
             self.controller.PID_linear.logger.save_log()
