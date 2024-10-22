@@ -72,7 +72,7 @@ class decision_maker(Node):
             print("waiting for odom msgs ....")
             return
         
-        pose = self.localizer.getPose()[:2]
+        pose = self.localizer.getPose()
         goal_pose = self.goal[0]
 
         vel_msg=Twist()
@@ -80,7 +80,7 @@ class decision_maker(Node):
         # TODO Part 3: Check if you reached the goal
         
         reached_goal = False
-        if calculate_linear_error(pose, goal_pose) < 0.01:
+        if calculate_linear_error(pose[:2], goal_pose) < 0.01:
             if len(self.goal) == 1:
                 reached_goal = True
             else:
@@ -97,7 +97,7 @@ class decision_maker(Node):
             raise Exception("Spin exited. Goal was reached")
             
         
-        velocity, yaw_rate = self.controller.vel_request(self.localizer.getPose(), self.goal, True)
+        velocity, yaw_rate = self.controller.vel_request(pose, [*goal_pose,0,-1], True)
 
         #TODO Part 4: Publish the velocity to move the robot
         vel_msg.linear.x = velocity
