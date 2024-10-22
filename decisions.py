@@ -75,10 +75,6 @@ class decision_maker(Node):
         pose = self.localizer.getPose()
         goal_pose = self.goal[0]
 
-        vel_msg=Twist()
-        
-        # TODO Part 3: Check if you reached the goal
-        
         reached_goal = False
         if calculate_linear_error(pose[:2], goal_pose) < 0.01:
             if len(self.goal) == 1:
@@ -100,9 +96,10 @@ class decision_maker(Node):
         velocity, yaw_rate = self.controller.vel_request(pose, [*goal_pose,0,-1], True)
 
         #TODO Part 4: Publish the velocity to move the robot
-        vel_msg.linear.x = velocity
-        vel_msg.angular.x = yaw_rate
-        self.publisher(vel_msg)
+        odom_msg = odom()
+        odom_msg.twist.twist.linear.x = velocity
+        odom_msg.twist.twist.angular.z = yaw_rate
+        self.publisher.publish(odom_msg)
 
 import argparse
 
