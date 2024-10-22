@@ -10,7 +10,7 @@ from rclpy import init, spin, spin_once
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 
-from rclpy.qos import QoSProfile
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
 from nav_msgs.msg import Odometry as odom
 
 from localization import localization, rawSensor
@@ -29,7 +29,10 @@ class decision_maker(Node):
         super().__init__("decision_maker")
 
         #TODO Part 4: Create a publisher for the topic responsible for robot's motion
-        self.publisher= self.create_publisher(publisher_msg, publishing_topic,qos_publisher) 
+        try:
+            self.publisher= self.create_publisher(publisher_msg, publishing_topic,qos_publisher) 
+        except Exception as e:
+            self.get_logger.error(str(e))   
 
         publishing_period=1/rate
         
@@ -113,20 +116,20 @@ def main(args=None):
     # Remember to define your QoS profile based on the information available in "ros2 topic info /odom --verbose" as explained in Tutorial 3
     
     #odom_qos=QoSProfile(reliability=2, durability=2, history=1, depth=10)
-    odom_qos=QoSProfile(reliability=1, durability=2, history=3, depth=10)
+    #odom_qos=QoSProfile(reliability=1, durability=2, history=3, depth=10)
+    odom_qos = QoSProfile(reliability=QoSReliabilityPolicy.RELIABLE, durability=QoSDurabilityPolicy.VOLATILE, history=QoSHistoryPolicy.KEEP_ALL, depth=10)
     
 
     # TODO Part 4: instantiate the decision_maker with the proper parameters for moving the robot
+    
     if args.motion.lower() == "point":
         DM=decision_maker(odom, "/odom", odom_qos, 0.005, rate=10, motion_type=POINT_PLANNER)
     elif args.motion.lower() == "trajectory":
         DM=decision_maker(odom, "/odom", odom_qos, [0.005,0.006,0.005], rate=10, motion_type=TRAJECTORY_PLANNER)
     else:
-        print("invalid motion type", file=sys.stderr)        
+        print("invalid motion type", file=sys.stderr)   
+     
          
-    
-    
-    
     try:
         spin(DM)
     except SystemExit:
