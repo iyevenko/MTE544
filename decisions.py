@@ -65,28 +65,26 @@ class decision_maker(Node):
     def timerCallback(self):
         
         # TODO Part 3: Run the localization node
-        ...    # Remember that this file is already running the decision_maker node.
-        spin_once(localization)
+        # Remember that this file is already running the decision_maker node.
+        spin_once(self.localizer)
         
         if self.localizer.getPose()  is  None:
             print("waiting for odom msgs ....")
             return
+        
+        pose = self.localizer.getPose()[:2]
+        goal_pose = self.goal[0]
 
         vel_msg=Twist()
         
         # TODO Part 3: Check if you reached the goal
-        reached_goal = False
-        if type(self.goal) == list:
-            for i in self.goal:
-                if calculate_linear_error <= self.goal[i]:
-                    reached_goal = True
-                else:
-                    reached_goal = False
-                    break
-        else: 
-            if calculate_linear_error <= self.goal:
-                reached_goal = True
         
+        reached_goal = False
+        if calculate_linear_error(pose, goal_pose) < 0.01:
+            if len(self.goal) == 1:
+                reached_goal = True
+            else:
+                self.goal.pop(0)
 
         if reached_goal:
             print("reached goal")
@@ -97,6 +95,7 @@ class decision_maker(Node):
             
             #TODO Part 3: exit the spin
             raise Exception("Spin exited. Goal was reached")
+            
         
         velocity, yaw_rate = self.controller.vel_request(self.localizer.getPose(), self.goal, True)
 
@@ -123,9 +122,9 @@ def main(args=None):
     # TODO Part 4: instantiate the decision_maker with the proper parameters for moving the robot
     
     if args.motion.lower() == "point":
-        DM=decision_maker(odom, "/odom", odom_qos, 0.005, rate=10, motion_type=POINT_PLANNER)
+        DM=decision_maker(odom, "/odom", odom_qos, [0.01, 0.01], rate=10, motion_type=POINT_PLANNER)
     elif args.motion.lower() == "trajectory":
-        DM=decision_maker(odom, "/odom", odom_qos, [0.005,0.006,0.005], rate=10, motion_type=TRAJECTORY_PLANNER)
+        DM=decision_maker(odom, "/odom", odom_qos, None, rate=10, motion_type=TRAJECTORY_PLANNER)
     else:
         print("invalid motion type", file=sys.stderr)   
      

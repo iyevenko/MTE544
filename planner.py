@@ -22,7 +22,7 @@ class planner:
     def point_planner(self, goalPoint):
         x = goalPoint[0]
         y = goalPoint[1]
-        return x, y
+        return [[x, y]]
 
     # Implement the trajectories here
     def trajectory_planner(self):
