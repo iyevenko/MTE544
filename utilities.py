@@ -105,7 +105,9 @@ def calculate_linear_error(current_pose, goal_pose):
     # Compute the linear error in x and y
     # Remember that current_pose = [x,y, theta, time stamp] and goal_pose = [x,y]
     # Remember to use the Euclidean distance to calculate the error.
-    error_linear= ...
+    error_x = current_pose[0]-goal_pose[0]
+    error_y = current_pose[1]-goal_pose[1]
+    error_linear= sqrt(error_x**2 + error_y**2)
 
     return error_linear
 
