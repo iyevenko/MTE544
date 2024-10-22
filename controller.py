@@ -73,4 +73,3 @@ class trajectoryController(controller):
 
         return listGoals[ min(closestIndex + 3, len(listGoals) - 1) ]
 
-#
