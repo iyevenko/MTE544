@@ -104,7 +104,7 @@ class localization(Node):
             xhat[3],                       # kf_w  (filtered angular velocity)
             xhat[0],                       # kf_x  (filtered position x)
             xhat[1],                       # kf_y  (filtered position y)
-            odom_msg.header.stamp          # stamp
+            Time.from_msg(odom_msg.header.stamp).nanoseconds*1e-9          # stamp
         ])
       
     def odom_callback(self, pose_msg):
