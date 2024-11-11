@@ -50,4 +50,4 @@ class planner:
         a = 1/10
         path = [[angle, a*angle] for angle in range (0,720)]
         return [[r*cos(theta*degree_rad_conversion),
-                 r*sin(theta*degree_rad_conversion)] for r,theta in path]
+                 r*sin(theta*degree_rad_conversion)] for theta,r in path]
