@@ -18,6 +18,9 @@ class planner:
         
         elif self.type==TRAJECTORY_PLANNER:
             return self.trajectory_planner()
+        
+        elif self.type==SPIRAL_4TUNE:
+            return self.spiral_4tune()
 
 
     def point_planner(self):
@@ -26,7 +29,7 @@ class planner:
 
 
     def trajectory_planner(self):
-        TRAJECTORY_TYPE=SPIRAL
+        TRAJECTORY_TYPE=SIGMOID
         degree_rad_conversion=3.14/180.0
         if TRAJECTORY_TYPE == PARABOLA:
             
@@ -36,17 +39,19 @@ class planner:
             return [[x*cos(theta) - y*sin(theta),
                     x*sin(theta)  + y*cos(theta)] for x,y in path]
         
-        elif TRAJECTORY_TYPE == SIGMOID:
+        else:
 
             path = [[ -(x/10.0) , -1/( 1 + math.exp(-(x/10)))] for x in range(0,30)]
             # rotate the path by theta degrees
             theta = 60.0 * degree_rad_conversion
             return [[x*cos(theta) - y*sin(theta),
                     x*sin(theta)  + y*cos(theta)] for x,y in path]
-        else:
             
-            a = 1/10
-            path = [[angle, a*angle] for angle in range (0,720)]
-            return [[r*cos(theta*degree_rad_conversion),
-                     r*sin(theta*degree_rad_conversion)] for theta,r in path]
         
+    def spiral_4tune(self):
+        
+        degree_rad_conversion=3.14/180.0
+        a = 1/10
+        path = [[angle, a*angle] for angle in range (0,720)]
+        return [[r*cos(theta*degree_rad_conversion),
+                 r*sin(theta*degree_rad_conversion)] for theta,r in path]
