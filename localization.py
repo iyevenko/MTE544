@@ -49,7 +49,7 @@ class localization(Node):
         
         x= np.zeros(6, dtype=np.float32)
         
-        Q= np.diag([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]) # tune
+        Q= np.diag([0.05, 0.05, 0.5, 0.5, 0.5, 0.5]) # tune
 
         R= np.diag([0.5, 0.5, 0.5, 0.5]) # tune
         

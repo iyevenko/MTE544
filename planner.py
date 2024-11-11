@@ -1,5 +1,6 @@
 from math import sin,cos, atan2,atan
 import math
+import numpy as np
 
 POINT_PLANNER=0; TRAJECTORY_PLANNER=1; SPIRAL_4TUNE=2
 
@@ -49,9 +50,10 @@ class planner:
             
         
     def spiral_4tune(self):
-        
-        degree_rad_conversion=3.14/180.0
-        a = 1/10
-        path = [[angle, a*angle] for angle in range (0,720)]
-        return [[r*cos(theta*degree_rad_conversion),
-                 r*sin(theta*degree_rad_conversion)] for theta,r in path]
+
+        t = np.linspace(0, 4*np.pi, 100)  # 2 revolutions = 4π
+        r = t/(4*np.pi)  # radius grows linearly from 0 to 1
+        x = r * np.cos(t)
+        y = r * np.sin(t)
+        points = list(zip(x, y))
+        return points
