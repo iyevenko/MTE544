@@ -51,6 +51,28 @@ class planner:
         
         pathCart = list(map(self.m_utilites.cell_2_position, search(self.costMap, startPose, endPose)))
 
+        # Plot the costmap and path
+        import matplotlib.pyplot as plt
+        
+        plt.figure(figsize=(10,10))
+        plt.imshow(self.costMap.T, cmap='gray')
+        
+        # Extract x and y coordinates from path for plotting
+        path_x = [p[0] for p in pathCart]
+        path_y = [p[1] for p in pathCart]
+        
+        # Plot path on top of costmap
+        plt.plot(path_x, path_y, 'r-', linewidth=2, label='Planned Path')
+        plt.scatter([startPose[0]], [startPose[1]], c='g', marker='o', s=100, label='Start')
+        plt.scatter([endPose[0]], [endPose[1]], c='r', marker='x', s=100, label='Goal')
+        
+        plt.colorbar(label='Cost')
+        plt.legend()
+        plt.title('Costmap with Planned Path')
+        plt.xlabel('X (pixels)')
+        plt.ylabel('Y (pixels)') 
+        plt.show()
+
 
         # TODO PART 5 return the path as list of [x,y]
         return pathCart
