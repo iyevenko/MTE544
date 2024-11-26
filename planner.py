@@ -31,7 +31,7 @@ class planner:
         # TODO PART 5 Create the cost-map, the laser_sig is 
         # the standard deviation for the gausiian for which
         # the mean is located on the occupant grid. 
-        self.m_utilites=mapManipulator(laser_sig=0.05)
+        self.m_utilites=mapManipulator(laser_sig=0.3)
             
         self.costMap=self.m_utilites.make_likelihood_field()
         
@@ -48,18 +48,18 @@ class planner:
         endPose=self.m_utilites.position_2_cell(endPoseCart)
         
         # TODO PART 5 convert the cell pixels into the cartesian coordinates
-        
-        pathCart = list(map(self.m_utilites.cell_2_position, search(self.costMap, startPose, endPose)))
+        path= search(self.costMap, startPose, endPose)
+        pathCart = list(map(self.m_utilites.cell_2_position, path))
 
         # Plot the costmap and path
         import matplotlib.pyplot as plt
         
         plt.figure(figsize=(10,10))
-        plt.imshow(self.costMap.T, cmap='gray')
+        plt.imshow(self.costMap, cmap='gray')
         
         # Extract x and y coordinates from path for plotting
-        path_x = [p[0] for p in pathCart]
-        path_y = [p[1] for p in pathCart]
+        path_x = [p[0] for p in path]
+        path_y = [p[1] for p in path]
         
         # Plot path on top of costmap
         plt.plot(path_x, path_y, 'r-', linewidth=2, label='Planned Path')
