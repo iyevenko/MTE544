@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from math import sqrt
 
 
+HEURISTIC = "euclidean"
+
 class Node:
     """
         A node class for A* Pathfinding
@@ -62,7 +64,10 @@ def search(maze, start, end):
         :return:
     """
 
-    distance = np.sqrt((start[0]-end[0])**2 + (start[1]-end[1])**2)
+    if HEURISTIC == "euclidean":
+        distance = np.sqrt((start[0]-end[0])**2 + (start[1]-end[1])**2)
+    else:  # manhattan
+        distance = abs(start[0]-end[0]) + abs(start[1]-end[1])
 
     # TODO PART 4 Create start and end node with initized values for g, h and f
     # Use None as parent if not defined
@@ -187,9 +192,13 @@ def search(maze, start, end):
 
             # TODO PART 4 Create the f, g, and h values
             is_diagonal = abs(child.position[0] - current_node.position[0]) + abs(child.position[1] - current_node.position[1]) > 1
-            child.g = current_node.g + (1 if not is_diagonal else sqrt(2))
-            # Heuristic costs calculated here, this is using eucledian distance
-            child.h = sqrt((child.position[0]-end_node.position[0])**2 + (child.position[1] - end_node.position[1])**2)
+            child.g = current_node.g + (1 if not is_diagonal else sqrt(2) if HEURISTIC == "euclidean" else 2)
+            
+            # Heuristic costs calculated here, using either euclidean or manhattan distance
+            if HEURISTIC == "euclidean":
+                child.h = sqrt((child.position[0]-end_node.position[0])**2 + (child.position[1] - end_node.position[1])**2)
+            else:  # manhattan
+                child.h = abs(child.position[0]-end_node.position[0]) + abs(child.position[1] - end_node.position[1])
 
             child.f = child.g + child.h
 
