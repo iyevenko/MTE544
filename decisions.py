@@ -63,6 +63,7 @@ class decision_maker(Node):
         else:
             print("Error! you don't have this type of planner", file=sys.stderr)
 
+        return
 
         self.goal = None
 

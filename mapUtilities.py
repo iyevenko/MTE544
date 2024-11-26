@@ -185,7 +185,7 @@ class mapManipulator(Node):
         self.occ_points=np.array(occupied_points)
         
                 
-        #self.plot_pgm_image(likelihood_field_img)
+        self.plot_pgm_image(likelihood_field_img)
 
         self.likelihood_field = likelihood_field
         
