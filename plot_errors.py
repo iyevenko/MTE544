@@ -3,8 +3,7 @@ from utilities import FileReader
 
 def plot_errors():
     
-    headers, values=FileReader("robot_pose.csv").read_file()
-
+    headers, values=FileReader("linear.csv").read_file()
     
     time_list=[]
     
